@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net10.0</TargetFramework>
+        <RootNamespace>random_mod_data_collector</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.2" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.2" />
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+      <PackageReference Include="ppy.osu.Game.Rulesets.Osu" Version="2026.128.0" />
+      <PackageReference Include="System.Threading.RateLimiting" Version="10.0.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="BeatmapIds\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="appconfig.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="BeatmapIds\all.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+</Project>
