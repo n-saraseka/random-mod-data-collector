@@ -25,7 +25,7 @@ public class DataProcessor
         var beatmapIndex = 0;
         var id = 0;
         
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < 100; i++)
         {
             beatmapIndex = Rng.Next(0, BeatmapIds.Length);
             id = BeatmapIds[beatmapIndex];
@@ -41,7 +41,7 @@ public class DataProcessor
                 var beatmap = await _service.GetScoreBeatmapAsync(id);
                 var flatWorkingBeatmap = new FlatWorkingBeatmap(beatmap);
                 var baseAttributes = Calculator.GetBaseDifficultyAttributes(flatWorkingBeatmap);
-                for (var j = 0; j < 10; j++)
+                for (var j = 0; j < 100; j++)
                 {
                     var seed = Rng.Next(Int32.MinValue, Int32.MaxValue);
                     var angleSharpness = (float)Rng.NextDouble() * (10 - 1) + 1;
@@ -64,6 +64,21 @@ public class DataProcessor
                 Console.WriteLine($"Exception: {exception.Message}");
             }
         }
+        Console.WriteLine($"Loaded all data");
         return allData;
+    }
+
+    public void ImportToCsv(List<BeatmapDifficultyData> data)
+    {
+        var output = File.CreateText(_configuration["OutputPath"]);
+        output.WriteLine("id, seed, angle_sharpness, base_difficulty, new_difficulty");
+        foreach (var line in data)
+            output.WriteLine($"{line.Id}, " +
+                             $"{line.Seed}, " +
+                             $"{Utils.ToPointDecimalString(line.AngleSharpness)}, " +
+                             $"{Utils.ToPointDecimalString(line.BaseDifficulty)}, " +
+                             $"{Utils.ToPointDecimalString(line.NewDifficulty)}");
+        output.Close();
+        Console.WriteLine($"Imported all data to {_configuration["OutputPath"]}");
     }
 }

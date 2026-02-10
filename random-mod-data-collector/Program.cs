@@ -5,6 +5,7 @@ using random_mod_data_collector;
 var configurationBuilder = new ConfigurationBuilder()
     .AddJsonFile("appconfig.json");
 var configuration = configurationBuilder.Build();
+
 var rateLimiter = new TokenBucketRateLimiter(new TokenBucketRateLimiterOptions
 {
     TokenLimit = 1,
@@ -18,3 +19,4 @@ var rateLimiter = new TokenBucketRateLimiter(new TokenBucketRateLimiterOptions
 var dataProcessor = new DataProcessor(configuration, rateLimiter);
 
 var data = await dataProcessor.ProcessData();
+dataProcessor.ImportToCsv(data);
