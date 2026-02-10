@@ -24,8 +24,10 @@ public class DataProcessor
         var allData = new List<BeatmapDifficultyData>();
         var beatmapIndex = 0;
         var id = 0;
+        var beatmapsPerRun = int.Parse(_configuration["BeatmapsPerRun"]);
+        var seedsPerBeatmap = int.Parse(_configuration["SeedsPerBeatmap"]);
         
-        for (var i = 0; i < 100; i++)
+        for (var i = 0; i < beatmapsPerRun; i++)
         {
             beatmapIndex = Rng.Next(0, BeatmapIds.Length);
             id = BeatmapIds[beatmapIndex];
@@ -41,10 +43,10 @@ public class DataProcessor
                 var beatmap = await _service.GetScoreBeatmapAsync(id);
                 var flatWorkingBeatmap = new FlatWorkingBeatmap(beatmap);
                 var baseAttributes = Calculator.GetBaseDifficultyAttributes(flatWorkingBeatmap);
-                for (var j = 0; j < 100; j++)
+                for (var j = 0; j < seedsPerBeatmap; j++)
                 {
                     var seed = Rng.Next(Int32.MinValue, Int32.MaxValue);
-                    var angleSharpness = (float)Rng.NextDouble() * (10 - 1) + 1;
+                    var angleSharpness = (float)(1 + (9.0 / seedsPerBeatmap) * j);
                     var difficultyAttributes = Calculator.GetRandomDifficultyAttributes(flatWorkingBeatmap, seed, angleSharpness);
                     
                     var difficultyData = new BeatmapDifficultyData()
