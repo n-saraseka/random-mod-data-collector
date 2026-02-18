@@ -89,7 +89,7 @@ public class DataProcessor
                     
                     var difficultyData = new BeatmapDifficultyData()
                     {
-                        Id = beatmap.BeatmapInfo.OnlineID,
+                        Id = id,
                         BaseDifficulty = baseAttributes.StarRating,
                         Seed = seed,
                         AngleSharpness = angleSharpness,
