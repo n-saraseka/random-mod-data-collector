@@ -1,4 +1,5 @@
-﻿using System.Threading.RateLimiting;
+﻿using System.Diagnostics;
+using System.Threading.RateLimiting;
 using Microsoft.Extensions.Configuration;
 using random_mod_data_collector;
 
@@ -17,6 +18,8 @@ var rateLimiter = new TokenBucketRateLimiter(new TokenBucketRateLimiterOptions
 });
 
 var dataProcessor = new DataProcessor(configuration, rateLimiter);
+
+Trace.Listeners.Add(new ConsoleTraceListener());
 
 var data = await dataProcessor.ProcessData();
 dataProcessor.ImportToCsv(data);
