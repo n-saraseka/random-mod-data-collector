@@ -10,6 +10,8 @@ public class DataProcessor
     private static OsuApiService _service;
     private static IConfiguration _configuration;
     private static readonly Random Rng = new();
+    private static int BeatmapsPerRun;
+    private static int SeedsPerBeatmap;
     private static int[] BeatmapIds;
 
     public DataProcessor(IConfiguration configuration, RateLimiter rateLimiter)
@@ -17,6 +19,8 @@ public class DataProcessor
         _service = new OsuApiService(configuration, rateLimiter);
         _configuration = configuration;
         BeatmapIds = JsonConvert.DeserializeObject<int[]>(File.ReadAllText(_configuration["BeatmapIdsPath"]));
+        BeatmapsPerRun = int.Parse(_configuration["BeatmapsPerRun"]);
+        SeedsPerBeatmap = int.Parse(_configuration["SeedsPerBeatmap"]);
     }
     
     public async Task<List<BeatmapDifficultyData>> ProcessData()
@@ -24,10 +28,8 @@ public class DataProcessor
         var allData = new List<BeatmapDifficultyData>();
         var beatmapIndex = 0;
         var id = 0;
-        var beatmapsPerRun = int.Parse(_configuration["BeatmapsPerRun"]);
-        var seedsPerBeatmap = int.Parse(_configuration["SeedsPerBeatmap"]);
         
-        for (var i = 0; i < beatmapsPerRun; i++)
+        for (var i = 0; i < BeatmapsPerRun; i++)
         {
             beatmapIndex = Rng.Next(0, BeatmapIds.Length);
             id = BeatmapIds[beatmapIndex];
@@ -41,33 +43,50 @@ public class DataProcessor
             try
             {
                 var beatmap = await _service.GetScoreBeatmapAsync(id);
-                var flatWorkingBeatmap = new FlatWorkingBeatmap(beatmap);
-                var baseAttributes = Calculator.GetBaseDifficultyAttributes(flatWorkingBeatmap);
-                for (var j = 0; j < seedsPerBeatmap; j++)
+                if (beatmap.BeatmapInfo.Ruleset.ShortName == "osu")
                 {
-                    var seed = Rng.Next(Int32.MinValue, Int32.MaxValue);
-                    var angleSharpness = (float)(1 + (9.0 / seedsPerBeatmap) * j);
-                    var difficultyAttributes = Calculator.GetRandomDifficultyAttributes(flatWorkingBeatmap, seed, angleSharpness);
-                    
-                    var difficultyData = new BeatmapDifficultyData()
-                    {
-                        Id = id,
-                        BaseDifficulty = baseAttributes.StarRating,
-                        Seed = seed,
-                        AngleSharpness = angleSharpness,
-                        NewDifficulty = difficultyAttributes.StarRating
-                    };
-                    allData.Add(difficultyData);
+                    Console.WriteLine($"Calculating data for beatmap {id}");
+                    var data = CalculateDifficultyData(beatmap);
+                    allData.AddRange(data);
                 }
+                else
+                    Console.WriteLine($"Beatmap {id} doesn't have the osu! ruleset, skipped");
             }
             catch (Exception exception)
             {
-                Console.WriteLine("Some kind of exception happened while calculating difficulty attributes. Likely wrong ruleset");
+                Console.WriteLine("Some kind of exception happened while calculating difficulty attributes");
                 Console.WriteLine($"Exception: {exception.Message}");
             }
         }
         Console.WriteLine($"Loaded all data");
         return allData;
+    }
+
+    public List<BeatmapDifficultyData> CalculateDifficultyData(Beatmap beatmap)
+    {
+        var data = new List<BeatmapDifficultyData>();
+        
+        var flatWorkingBeatmap = new FlatWorkingBeatmap(beatmap);
+        var baseAttributes = Calculator.GetBaseDifficultyAttributes(flatWorkingBeatmap);
+        
+        for (var j = 0; j < SeedsPerBeatmap; j++)
+        {
+            var seed = Rng.Next(Int32.MinValue, Int32.MaxValue);
+            var angleSharpness = (float)(1 + (9.0 / (SeedsPerBeatmap - 1)) * j);
+            var difficultyAttributes = Calculator.GetRandomDifficultyAttributes(flatWorkingBeatmap, seed, angleSharpness);
+                    
+            var difficultyData = new BeatmapDifficultyData()
+            {
+                Id = beatmap.BeatmapInfo.OnlineID,
+                BaseDifficulty = baseAttributes.StarRating,
+                Seed = seed,
+                AngleSharpness = angleSharpness,
+                NewDifficulty = difficultyAttributes.StarRating
+            };
+            data.Add(difficultyData);
+        }
+
+        return data;
     }
 
     public void ImportToCsv(List<BeatmapDifficultyData> data)
