@@ -1,4 +1,4 @@
-For builds of this program to work properly, an appconfig.json needs to be placed in the build's folder. Here's a breakdown of all keys that should the appconfig file contain:
+For builds of this program to work properly, an appconfig.json needs to be placed in the build's folder. Here's a breakdown of all keys that the appconfig file should contain:
 Key | Value
 --- | --- 
 BeatmapIdsPath | "BeatmapIds/all.json" 
