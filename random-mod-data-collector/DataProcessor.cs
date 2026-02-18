@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Threading.RateLimiting;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -45,20 +46,20 @@ public class DataProcessor
                 var beatmap = await _service.GetScoreBeatmapAsync(id);
                 if (beatmap.BeatmapInfo.Ruleset.ShortName == "osu")
                 {
-                    Console.WriteLine($"Calculating data for beatmap {id}");
+                    Trace.WriteLine($"Calculating data for beatmap {id}");
                     var data = CalculateDifficultyData(beatmap);
                     allData.AddRange(data);
                 }
                 else
-                    Console.WriteLine($"Beatmap {id} doesn't have the osu! ruleset, skipped");
+                    Trace.WriteLine($"Beatmap {id} doesn't have the osu! ruleset, skipped");
             }
             catch (Exception exception)
             {
-                Console.WriteLine("Some kind of exception happened while calculating difficulty attributes");
-                Console.WriteLine($"Exception: {exception.Message}");
+                Trace.WriteLine("Some kind of exception happened while calculating difficulty attributes");
+                Trace.WriteLine($"Exception: {exception.Message}");
             }
         }
-        Console.WriteLine($"Loaded all data");
+        Trace.WriteLine($"Loaded all data");
         return allData;
     }
 
@@ -100,6 +101,6 @@ public class DataProcessor
                              $"{Utils.ToPointDecimalString(line.BaseDifficulty)}, " +
                              $"{Utils.ToPointDecimalString(line.NewDifficulty)}");
         output.Close();
-        Console.WriteLine($"Imported all data to {_configuration["OutputPath"]}");
+        Trace.WriteLine($"Imported all data to {_configuration["OutputPath"]}");
     }
 }
