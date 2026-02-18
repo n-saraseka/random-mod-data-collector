@@ -21,5 +21,5 @@ var dataProcessor = new DataProcessor(configuration, rateLimiter);
 
 Trace.Listeners.Add(new ConsoleTraceListener());
 
-var data = await dataProcessor.ProcessData();
+var data = await dataProcessor.ProcessDataAsync();
 dataProcessor.ImportToCsv(data);
